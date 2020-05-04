@@ -9,3 +9,9 @@
 #define LED_PIN 4
 #define CHARGE_PIN GPIO_NUM_32
 #define MPU_ADDR 0x69
+
+#ifdef DEBUG_PORT
+#define DEBUG_MSG(...) DEBUG_PORT.printf(__VA_ARGS__)
+#else
+#define DEBUG_MSG(...)
+#endif

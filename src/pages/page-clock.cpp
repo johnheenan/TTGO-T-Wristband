@@ -80,7 +80,8 @@ void actionClock()
 {
   activateWifi();
   msgInfo("UPDATING TIME...");
-  setTime(syncTime());
+  RTC_Date datetime = syncTime();
+  setTime(datetime);
   deactivateWifi();
   msgSuccess("TIME UPDATED");
   sleep(3);
