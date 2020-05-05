@@ -9,6 +9,7 @@
 
 void setup()
 {
+  loadSettings();
   Serial.begin(115200);
   Wire.begin(I2C_SDA_PIN, I2C_SCL_PIN);
   Wire.setClock(400000);
@@ -17,11 +18,10 @@ void setup()
   deactivateWifi();
   btStop();
   setupADC();
-#ifndef IMU_SKIP
-  initMPU();
-#else
-  mpuDeepSleep();
-#endif
+  if (!settings.imu_skip)
+    initMPU();
+  else
+    mpuDeepSleep();
   initButton();
   setupBattery();
 }

@@ -2,26 +2,9 @@
 
 #include "clock.hpp"
 #include "timezone.hpp"
+#include "eeprom.hpp"
 
 PCF8563_Class rtc;
-
-uint8_t current_dayweek = 8;
-uint8_t current_minute = 0;
-
-bool tz_uses_dst = TZ_USES_DST;
-int tz_offset = TZ_OFFSET;
-week_t tz_week = TZ_WEEK;
-dow_t tz_wday = TZ_WDAY;
-
-const char *tz_dst_name = TZ_DST_NAME;
-month_t tz_dst_month = TZ_DST_MONTH;
-int8_t tz_dst_hour = TZ_DST_HOUR;
-int tz_dst_offset = TZ_DST_OFFSET;
-
-const char *tz_std_name = TZ_STD_NAME;
-month_t tz_std_month = TZ_STD_MONTH;
-int8_t tz_std_hour = TZ_STD_HOUR;
-int tz_std_offset = TZ_STD_OFFSET;
 
 void initClock()
 {
@@ -63,8 +46,8 @@ RTC_Date getUTCTime()
 
   if (!isUsingDST())
   {
-    timeStructure.tm_hour = now.hour - tz_offset / 60;
-    timeStructure.tm_min = now.minute - tz_offset % 60;
+    timeStructure.tm_hour = now.hour - settings.tz_offset / 60;
+    timeStructure.tm_min = now.minute - settings.tz_offset % 60;
     utcNow = mktime(&timeStructure);
     utcStructure = localtime(&utcNow);
   }
@@ -73,13 +56,13 @@ RTC_Date getUTCTime()
     if (!utcDST) //todo jh also call beginDST if year changes
       beginDST(now.year);
 
-    timeStructure.tm_hour = now.hour - tz_dst_offset / 60;
-    timeStructure.tm_min = now.minute - tz_dst_offset % 60;
+    timeStructure.tm_hour = now.hour - settings.tz_dst_offset / 60;
+    timeStructure.tm_min = now.minute - settings.tz_dst_offset % 60;
     utcNowIfDST = mktime(&timeStructure);
     summerIfDST = isDST(utcNowIfDST);
 
-    timeStructure.tm_hour = now.hour - tz_std_offset / 60;
-    timeStructure.tm_min = now.minute - tz_std_offset % 60;
+    timeStructure.tm_hour = now.hour - settings.tz_std_offset / 60;
+    timeStructure.tm_min = now.minute - settings.tz_std_offset % 60;
     utcNowIfSTD = mktime(&timeStructure);
     summerIfSTD = isDST(utcNowIfSTD);
 
@@ -105,12 +88,12 @@ void setTime(RTC_Date datetime)
 
 bool isUsingDST()
 {
-  return tz_uses_dst;
+  return settings.tz_uses_dst;
 }
 
 bool isNothernHemispere()
 {
-  return tz_dst_month < tz_std_month;
+  return settings.tz_dst_month < settings.tz_std_month;
 }
 
 // Next three functions contain code adapted by John Heenan from Arduino NTP code
@@ -166,10 +149,10 @@ time_t calcDateDST(int year, int8_t week, int8_t wday, int8_t month, int8_t hour
 
 void beginDST(int year)
 {
-  time_t dstTime = calcDateDST(year, tz_week, tz_wday, tz_dst_month, tz_dst_hour);
-  utcDST = dstTime - (tz_dst_offset * SECS_PER_MINUTES);
-  time_t stdTime = calcDateDST(year, tz_week, tz_wday, tz_std_month, tz_std_hour);
-  utcSTD = stdTime - (tz_std_offset * SECS_PER_MINUTES);
+  time_t dstTime = calcDateDST(year, settings.tz_week, settings.tz_wday, settings.tz_dst_month, settings.tz_dst_hour);
+  utcDST = dstTime - (settings.tz_dst_offset * SECS_PER_MINUTES);
+  time_t stdTime = calcDateDST(year, settings.tz_week, settings.tz_wday, settings.tz_std_month, settings.tz_std_hour);
+  utcSTD = stdTime - (settings.tz_std_offset * SECS_PER_MINUTES);
 }
 
 bool isDST(time_t utcNow)

@@ -223,7 +223,7 @@ void drawBattery(float voltage, uint8_t percentage, bool charging)
   uint16_t barHeight = height - 2 * margin;
   uint16_t barWidth = width - 2 * margin;
   sprintf(voltageString, "%2.2f", voltage);
-
+  
   tft.fillScreen(TFT_BLACK);
 
   if (percentage == 0)
@@ -246,6 +246,7 @@ void drawBattery(float voltage, uint8_t percentage, bool charging)
   {
     voltageInfo += " Charging";
   }
+  voltageInfo+= settings.imu_skip ? ",  IMU: OFF" : ",  IMU: ON";
   tft.drawString(voltageInfo, tft.width() / 2, tft.height());
 }
 

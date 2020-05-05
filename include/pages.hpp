@@ -6,6 +6,8 @@
 #include "pages/page-battery.hpp"
 #include "pages/page-bearing.hpp"
 #include "pages/page-temperature.hpp"
+#include "pages/page-imu.hpp"
+#include "eeprom.h"
 
 void handleUi();
 void increasePage();

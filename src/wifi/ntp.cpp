@@ -3,21 +3,22 @@
 #include <WiFiUdp.h>
 #include <NTP.h>
 #include "clock.hpp"
+#include "eeprom.hpp"
 
 WiFiUDP wifiUdp;
 NTP ntp(wifiUdp);
 
 void initNTP()
 {
-  if (tz_uses_dst)
+  if (settings.tz_uses_dst)
   {
-    ntp.ruleDST(tz_dst_name, tz_week, tz_wday, tz_dst_month, tz_dst_hour, tz_dst_offset);
-    ntp.ruleSTD(tz_std_name, tz_week, tz_wday, tz_std_month, tz_std_hour, tz_std_offset);
+    ntp.ruleDST(settings.tz_dst_name, settings.tz_week, settings.tz_wday, settings.tz_dst_month, settings.tz_dst_hour, settings.tz_dst_offset);
+    ntp.ruleSTD(settings.tz_std_name, settings.tz_week, settings.tz_wday, settings.tz_std_month, settings.tz_std_hour, settings.tz_std_offset);
   }
   else
   {
     ntp.isDST(false);
-    ntp.timeZone(tz_offset / 60, tz_offset % 60);
+    ntp.timeZone(settings.tz_offset / 60, settings.tz_offset % 60);
   }
   ntp.begin();
   ntp.update();

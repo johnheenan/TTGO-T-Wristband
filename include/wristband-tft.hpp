@@ -3,6 +3,7 @@
 #include <SPI.h>
 #include <Wire.h>
 #include <hal.hpp>
+#include "eeprom.hpp"
 
 #define SEG7_BACKGROUND 0x0821
 
