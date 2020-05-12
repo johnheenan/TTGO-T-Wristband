@@ -1,6 +1,5 @@
 #include <Arduino.h>
 #include "clock.hpp"
-#include "ntp.hpp"
 #include "wristband-tft.hpp"
 #include "wristband-wifi.hpp"
 

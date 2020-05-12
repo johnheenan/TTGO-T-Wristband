@@ -7,12 +7,12 @@ void actionIMU()
   if (settings.imu_skip)
   {
     mpuDeepSleep();
-    msgInfo("IMU (Acceler) is OFF", "Watch using less power");
+    msgInfo("IMU (Acceler) is OFF", "Watch using less power", FIRMWARE_VER);
   }
   else
   {
     initMPU();
-    msgInfo("IMU (Acceler) is ON", "Watch using more power");
+    msgInfo("IMU (Acceler) is ON", "Watch using more power", FIRMWARE_VER);
   }
   sleep(3);
 }

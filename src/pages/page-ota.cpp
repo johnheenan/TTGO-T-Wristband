@@ -13,7 +13,7 @@ void waitOta()
 {
   unsigned long oldmilis = millis();
   activateWifi();
-  setupOTA();
+  setupOTA(); // todo jh how do I change amount of debug info dumped?
   msgInfo("Waiting for OTA on", WiFi.localIP().toString().c_str());
   while (millis() - oldmilis < 60000)
   {
@@ -24,4 +24,5 @@ void waitOta()
   }
   deactivateWifi();
   msgWarning("OTA Timeout");
+  sleep(3);
 }

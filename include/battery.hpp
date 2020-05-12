@@ -8,6 +8,8 @@
 void setupADC();
 void setupBattery();
 float getVoltage();
+float getVoltageVBUS();
 uint8_t calcPercentage(float volts);
 void updateBatteryChargeStatus();
 bool isCharging();
+bool isPluggedIn();

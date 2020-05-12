@@ -5,23 +5,19 @@ TFT_eSPI tft = TFT_eSPI();
 void tftInit()
 {
   tft.init();
+#ifndef TFT_ROTATE
   tft.setRotation(1);
+#else
+  if (TFT_ROTATE == 1 || TFT_ROTATE == 3)
+    tft.setRotation(TFT_ROTATE);
+  else
+    tft.setRotation(1);
+#endif
   tft.setSwapBytes(true);
   tft.fillScreen(TFT_BLACK);
   ledcSetup(0, 5000, 8);
   ledcAttachPin(TFT_BL, 0);
   ledcWrite(0, 185);
-}
-
-void wifiManagerAdvice(const char *ap_name)
-{
-  tft.fillScreen(TFT_BLACK);
-  tft.setTextColor(TFT_WHITE);
-  tft.drawString("Connect hotspot name ", 20, tft.height() / 2 - 20);
-  tft.drawString("configure wrist", 35, tft.height() / 2 + 20);
-  tft.setTextColor(TFT_GREEN);
-  tft.setTextDatum(MC_DATUM);
-  tft.drawString(ap_name, tft.width() / 2, tft.height() / 2);
 }
 
 void drawProgressBar(uint16_t x0, uint16_t y0, uint16_t w, uint16_t h, uint8_t percentage, uint16_t frameColor, uint16_t barColor)
@@ -60,40 +56,52 @@ void msgError(const char *message)
 {
   msg(message, TFT_RED);
 }
-
 void msgError(const char *message1, const char *message2)
 {
   msg(message1, message2, TFT_RED);
+}
+void msgError(const char *message1, const char *message2, const char *message3)
+{
+  msg(message1, message2, message3, TFT_RED);
 }
 
 void msgWarning(const char *message)
 {
   msg(message, TFT_ORANGE);
 }
-
 void msgWarning(const char *message1, const char *message2)
 {
   msg(message1, message2, TFT_ORANGE);
+}
+void msgWarning(const char *message1, const char *message2, const char *message3)
+{
+  msg(message1, message2, message3, TFT_ORANGE);
 }
 
 void msgSuccess(const char *message)
 {
   msg(message, TFT_GREEN);
 }
-
 void msgSuccess(const char *message1, const char *message2)
 {
   msg(message1, message2, TFT_GREEN);
+}
+void msgSuccess(const char *message1, const char *message2, const char *message3)
+{
+  msg(message1, message2, message3, TFT_GREEN);
 }
 
 void msgInfo(const char *message)
 {
   msg(message, TFT_CYAN);
 }
-
 void msgInfo(const char *message1, const char *message2)
 {
   msg(message1, message2, TFT_CYAN);
+}
+void msgInfo(const char *message1, const char *message2, const char *message3)
+{
+  msg(message1, message2, message3, TFT_CYAN);
 }
 
 void msg(const char *message, uint16_t color)
@@ -111,6 +119,16 @@ void msg(const char *message1, const char *message2, uint16_t color)
   tft.setTextDatum(MC_DATUM);
   tft.drawString(message1, tft.width() / 2, tft.height() / 2 - 15, 2);
   tft.drawString(message2, tft.width() / 2, tft.height() / 2 + 15, 2);
+}
+
+void msg(const char *message1, const char *message2, const char *message3, uint16_t color)
+{
+  tft.fillScreen(TFT_BLACK);
+  tft.setTextColor(color);
+  tft.setTextDatum(MC_DATUM);
+  tft.drawString(message1, tft.width() / 2, tft.height() / 2 - 20, 2);
+  tft.drawString(message2, tft.width() / 2, tft.height() / 2, 2);
+  tft.drawString(message3, tft.width() / 2, tft.height() / 2 + 20, 2);
 }
 
 void tftSleep(bool showMsg)
@@ -223,7 +241,7 @@ void drawBattery(float voltage, uint8_t percentage, bool charging)
   uint16_t barHeight = height - 2 * margin;
   uint16_t barWidth = width - 2 * margin;
   sprintf(voltageString, "%2.2f", voltage);
-  
+
   tft.fillScreen(TFT_BLACK);
 
   if (percentage == 0)
@@ -246,7 +264,7 @@ void drawBattery(float voltage, uint8_t percentage, bool charging)
   {
     voltageInfo += " Charging";
   }
-  voltageInfo+= settings.imu_skip ? ",  IMU: OFF" : ",  IMU: ON";
+  voltageInfo += settings.imu_skip ? ",  IMU: OFF" : ",  IMU: ON";
   tft.drawString(voltageInfo, tft.width() / 2, tft.height());
 }
 

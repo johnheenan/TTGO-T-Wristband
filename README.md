@@ -1,3 +1,93 @@
+# Modifications in this branch by John Heenan
+
+### Uploading Firmware File
+
+If you have got a working version of TioRuben's code on your T-Wristband then you can OTA the firmware file for this source code, firmware.bin from the release section of this github repo, tagged as v0.1-alpha.
+
+It can be OTA uploaded to the T-Wristband with: 
+
+```
+espota.py --auth=wristbandpass --progress -i <ip address> -f firmware.bin
+```
+For example if the screen shows IP address  192.168.1.177 then 
+```
+espota.py --auth=wristbandpass --progress -i 192.168.1.177 -f firmware.bin
+```
+
+### Screen changes
+
+ Screen   | Skipping in mod | Long Press Original | Long Press Modifed 
+---------------|-----------------|------------------|--------------------
+ Orange Local Time | No | Update Time with NTP | Update Time with NTP
+ Green UTC Time | No | Update Time with NTP | Set DST Region or UTC Offset
+ Battery Level|No|None|Toggle IMU on or off for power saving|
+ Orange Compass Degrees|Yes in mod if IMU off|Calibrate Compass|Calibrate Compass
+ Red Temperature|Yes in mod if IMU off|None| None
+ OTA (upgrade firmware)|No|Update firmware|Update firmware
+ Deep Sleep | Yes in mod if plugged in | Wake up| Wake up
+
+In the original there are two types of key presses
+
+Brief press changes screen and a key press of one second chooses an action
+
+So IMU can be toggled on or off by holding down the the button on the battery screen
+
+## Key Press Behaviour Changes For UTC and DST Menus
+
+The behaviour of key presses change changes in the UTC action to change DST region or UTC offset
+
+1. A key press advances either the DST Regions or the UTC Offset screen. 
+2. A key press of one second choose an option and backs out
+3. No key press for five seconds backs out and chooses nothing
+
+### UTC Offset Menu
+
+There are 49 choices: 48 for each half hour increment in day and a choice to move to DST Regions menu instead. If you choose DST regions then go back in view.
+
+### UTC Region Menu
+
+The sample firmware had four choices and one other to move to UTC Offset menu
+
+If you choose UTC Offset then go back to view.
+
+The four choices are 
+* Europe, Central
+* China
+* Brisbane
+* Sydney
+
+A region does not have to be a DST region to put an entry in (such as China and Brisbane)
+
+You can code up to 100 in the timezones.cpp file. Each entry only requires one line.
+
+## NVS (as EEPROM) Settings preserved
+
+If the settings structure has the same size as before then settings are preserved across firmware updates, unless the EEPROM_VER value in platformio.ini is changed
+
+## Additional Documentation and TODOs
+
+There are strings in the code that partially serve as documentation. Just search or grep through code for "doco" and "todo jh", such as:
+
+* grep -r doco *
+* grep -r "todo jh" *
+  
+
+## Miscellaneous Notes
+
+platformio.ini documents various build time choices.
+
+The WiFi Manager screen that appears if a WiFi connection fails shows name of AP to connect to (T-Wristband) and when connected what IP to use in a web browser. The screen now times out after two minutes
+
+Internally, since the NTP library code tries many times to get an answer, the code only makes one attempt to get time the time through the library. If there is a failure, just try again later.
+
+The NTP library code was modified minimally.
+
+A firmware ID screen such as "200512,jh,branch,tr" appears in the IMU on/off screen. 200512 means 12 May 2020. "jh,branch,tr" means branch of John Heenan from TioRuben.
+
+There are strings in the code that partially serve as documentation. Just grep through code
+
+# From the version cloned from:
+
 # WIP: TTGO T-Wristband Example
 
 First steps with TTGO T-Wristband. [Product page](https://es.aliexpress.com/item/4000527495064.html).

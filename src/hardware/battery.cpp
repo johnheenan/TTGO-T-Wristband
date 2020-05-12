@@ -25,6 +25,13 @@ float getVoltage()
   return battery_voltage;
 }
 
+float getVoltageVBUS()
+{
+  uint16_t v = analogRead(VBUS_ADC_PIN);
+  float battery_voltage = ((float)v / 4095.0) * 2.0 * 3.3 * (vref / 1000.0);
+  return battery_voltage;
+}
+
 uint8_t calcPercentage(float volts)
 {
   float percentage = (volts - BATTERY_MIN_V) * 100 / (BATTERY_MAX_V - BATTERY_MIN_V);
@@ -47,4 +54,14 @@ void updateBatteryChargeStatus()
 bool isCharging()
 {
   return !digitalRead(CHARGE_PIN);
+}
+
+bool isPluggedIn()
+{
+  if (isCharging())
+    return true;
+  if (getVoltageVBUS() > 4.0)
+    return true;
+  else
+    return false;
 }

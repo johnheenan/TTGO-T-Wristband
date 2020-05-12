@@ -78,11 +78,16 @@ void pageRtc(bool initialLoad)
 
 void actionClock()
 {
-  activateWifi();
   msgInfo("UPDATING TIME...");
+  activateWifi();
   RTC_Date datetime = syncTime();
-  setTime(datetime);
   deactivateWifi();
-  msgSuccess("TIME UPDATED");
+  if (datetime.year != 0)
+  {
+    setTime(datetime);
+    msgSuccess("TIME UPDATED");
+  }
+  else
+    msgSuccess("TIME NOT UPDATED", "WiFi Connected", "Internet Not Connected");
   sleep(3);
 }

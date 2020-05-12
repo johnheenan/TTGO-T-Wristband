@@ -1,10 +1,29 @@
-// Edits and additions by John Heenan 2020
+// Edits and additions by John Heenan 2020 are as is and with no warranty. Please retain line
 
 #include "clock.hpp"
-#include "timezone.hpp"
-#include "eeprom.hpp"
+#include "timezones.hpp"
+
+/*
+doco
+doco the DST, STD convention of DST earlier than STD is retained for the southern hemisphere because the maths work
+doco so please do not call this a bug. If there is a bug it is that the names do not mean what they imply.
+doco it is a pointless exercise to change variable names when the intention is clear for those in the Northern hemisphere
+doco and users are not exposed to the issue
+doco ntp.isDST() ntp2.isDST(utc) answer the queston is it DST in the Northern Hemisphere
+doco the answer is correct even if a Southern Hemisphere DST is in use 
+doco to find if it is summertime in the Southern Hemisphere call function ntp2.isDSTSouth()
+doco
+doco there is currently no automatic test of rollover at DST changeover times. You can force a changeover
+doco by updating time with NTP (orange local time long press)
+doco or by changing to another DST Region and changing back again (green UTC time long press).
+doco
+*/
+
 
 PCF8563_Class rtc;
+WiFiUDP wifiUdp;
+NTP ntp(wifiUdp);
+NTP2 ntp2(ntp);
 
 void initClock()
 {
@@ -27,7 +46,7 @@ RTC_Date getClockTime()
   return now;
 }
 
-RTC_Date getUTCTime()
+RTC_Date getUTCTime(time_t *utc)
 {
   RTC_Date now = rtc.getDateTime();
   tm timeStructure;
@@ -37,47 +56,55 @@ RTC_Date getUTCTime()
   bool summerIfSTD;
   time_t utcNow;
   tm *utcStructure;
+  dst_t *dst = &dst_array[dst_index];
 
   timeStructure.tm_sec = now.second;
   timeStructure.tm_mday = now.day;
   timeStructure.tm_mon = now.month - 1;
   timeStructure.tm_year = now.year - 1900;
   timeStructure.tm_isdst = 0;
+  int min;
 
-  if (!isUsingDST())
+  if (!settings.tz_uses_dst)
   {
     timeStructure.tm_hour = now.hour - settings.tz_offset / 60;
-    timeStructure.tm_min = now.minute - settings.tz_offset % 60;
+    min = settings.tz_offset % 60;
+    // if (min<0)
+    //   min=-min;
+    timeStructure.tm_min = now.minute - min;
     utcNow = mktime(&timeStructure);
     utcStructure = localtime(&utcNow);
   }
   else
   {
-    if (!utcDST) //todo jh also call beginDST if year changes
-      beginDST(now.year);
-
-    timeStructure.tm_hour = now.hour - settings.tz_dst_offset / 60;
-    timeStructure.tm_min = now.minute - settings.tz_dst_offset % 60;
+    timeStructure.tm_hour = now.hour - dst->dst_offset / 60;
+    min = dst->dst_offset % 60;
+    // if (min<0)
+    //   min=-min;
+    timeStructure.tm_min = now.minute - min;
     utcNowIfDST = mktime(&timeStructure);
-    summerIfDST = isDST(utcNowIfDST);
+    summerIfDST = ntp2.isDST(utcNowIfDST);
 
-    timeStructure.tm_hour = now.hour - settings.tz_std_offset / 60;
-    timeStructure.tm_min = now.minute - settings.tz_std_offset % 60;
+    timeStructure.tm_hour = now.hour - dst->std_offset / 60;
+    min = dst->std_offset % 60;
+    // if (min<0)
+    //   min=-min;
+    timeStructure.tm_min = now.minute - min;
     utcNowIfSTD = mktime(&timeStructure);
-    summerIfSTD = isDST(utcNowIfSTD);
-
-    // DEBUG_MSG("utcNowIfDST, summerIfDST, utcNowIfSTD, summerIfSTD: %ld, %s, %ld, %s\n",
-    //    utcNowIfDST, summerIfDST?"true":"false", utcNowIfSTD, summerIfSTD?"true":"false");
+    summerIfSTD = ntp2.isDST(utcNowIfSTD);
 
     if (summerIfDST && summerIfSTD)
-      utcStructure = localtime(&utcNowIfDST);
+      utcNow = utcNowIfDST;
     else if (!summerIfDST && !summerIfSTD)
-      utcStructure = localtime(&utcNowIfSTD);  // todo jh review and test this 
+      utcNow = utcNowIfSTD; // todo jh review and test this
     else if (summerIfDST && !summerIfSTD)
-      utcStructure = localtime(&utcNowIfDST);  // todo jh review and test this 
-    else // !summerIfDST && summerIfSTD
-      utcStructure = localtime(&utcNowIfSTD);
+      utcNow = utcNowIfDST; // todo jh review and test this
+    else                    // !summerIfDST && summerIfSTD
+      utcNow = utcNowIfSTD;
+    utcStructure = localtime(&utcNow);
   }
+  if (utc != nullptr)
+    *utc = utcNow;
   return RTC_Date(utcStructure->tm_year + 1900, utcStructure->tm_mon + 1, utcStructure->tm_mday, utcStructure->tm_hour, utcStructure->tm_min, utcStructure->tm_sec);
 }
 
@@ -86,94 +113,70 @@ void setTime(RTC_Date datetime)
   rtc.setDateTime(datetime);
 }
 
-bool isUsingDST()
-{
-  return settings.tz_uses_dst;
+bool isNothernHemispere() // doco if offsets are equal (which you can test for) then this function fails
+{// todo jh this function will not work unless there is a real diiference in offsets. For example will not work for Brisbane which has no DST but is included as if it does
+  return dst_array[dst_index].dst_offset > dst_array[dst_index].std_offset;
 }
 
-bool isNothernHemispere()
+void setNtpUtcDst(time_t utcNow)
 {
-  return settings.tz_dst_month < settings.tz_std_month;
+  ntp2.setUtcDst(utcNow);
 }
 
-// Next three functions contain code adapted by John Heenan from Arduino NTP code
-/**
- * NTP library for Arduino framewoek
- * The MIT License (MIT)
- * (c) 2018 sstaub
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
-time_t utcSTD, utcDST;
-time_t calcDateDST(int year, int8_t week, int8_t wday, int8_t month, int8_t hour)
+void initNTP()
 {
-  if (week == 0)
+  if (settings.tz_uses_dst)
   {
-    if (month++ > 11)
-    {
-      month = 0;
-      year++;
-    }
-    week = 1;
-  }
-
-  struct tm tm;
-  tm.tm_hour = hour;
-  tm.tm_min = 0;
-  tm.tm_sec = 0;
-  tm.tm_mday = 1;
-  tm.tm_mon = month;
-  tm.tm_year = year - 1900;
-  time_t t = mktime(&tm);
-
-  t += ((wday - tm.tm_wday + 7) % 7 + (week - 1) * 7) * SECS_PER_DAY;
-  if (week == 0)
-    t -= 7 * SECS_PER_DAY;
-  return t;
-}
-
-void beginDST(int year)
-{
-  time_t dstTime = calcDateDST(year, settings.tz_week, settings.tz_wday, settings.tz_dst_month, settings.tz_dst_hour);
-  utcDST = dstTime - (settings.tz_dst_offset * SECS_PER_MINUTES);
-  time_t stdTime = calcDateDST(year, settings.tz_week, settings.tz_wday, settings.tz_std_month, settings.tz_std_hour);
-  utcSTD = stdTime - (settings.tz_std_offset * SECS_PER_MINUTES);
-}
-
-bool isDST(time_t utcNow)
-{
-  if (!isUsingDST())
-    return false;
-  // DEBUG_MSG("isDST(): utcSTD, utcNow, utcDST: %ld, %ld, %ld\n", utcSTD, utcNow, utcDST);
-  if (isNothernHemispere())
-  {
-    // DEBUG_MSG("is northern hemisphere\n");
-    if ((utcNow > utcDST) && (utcNow <= utcSTD))
-      return true;
-    else
-      return false;
+    ntp.isDST(true);
+    dst_t *dst = &dst_array[dst_index];
+    ntp.ruleDST(dst->dst_code, dst->week, dst->wday, dst->dst_month, dst->dst_hour, dst->dst_offset);
+    ntp.ruleSTD(dst->std_code, dst->week, dst->wday, dst->std_month, dst->std_hour, dst->std_offset);
   }
   else
   {
-    // DEBUG_MSG("is southern hemisphere\n");
-    if ((utcNow >= utcSTD) && (utcNow < utcDST))
-      return false;
-    else
-      return true;
+    ntp.isDST(false);
+    ntp.timeZone(settings.tz_offset / 60, settings.tz_offset % 60);
   }
+}
+
+RTC_Date syncTime()
+{
+  initNTP();
+  ntp.begin(false);
+  RTC_Date datetime = RTC_Date(ntp.year(), ntp.month(), ntp.day(), ntp.hours(), ntp.minutes(), ntp.seconds());
+  ntp.stop();
+  return datetime;
+}
+
+bool NTP2::isDST(time_t utc)  //answers is it DST in the northern hemisphere, see next function for southern hemisphere
+{
+  if ((utc > ntp.utcDST) && (utc <= ntp.utcSTD))
+    return true;
+  else
+    return false;
+}
+
+bool NTP2::isDSTSouth() //only works if offsets are different in table
+{
+  bool dst = ntp.isDST();
+  if (isNothernHemispere())
+    return dst;
+  else
+    return !dst;
+}
+
+void NTP2::setUtcDst(time_t utcNow)
+{
+  ntp.utcTime = utcNow;
+  ntp.lastUpdate = millis();
+  ntp.diffTime = 0;
+  initNTP();
+  if (settings.tz_uses_dst)
+  {
+    ntp.timezoneOffset = ntp.dstEnd.tzOffset * SECS_PER_MINUTES;
+    ntp.dstOffset = (ntp.dstStart.tzOffset - ntp.dstEnd.tzOffset) * SECS_PER_MINUTES;
+    ntp.currentTime(); // in case year has changed
+    ntp.beginDST();
+  }
+  setTime(RTC_Date(ntp.year(), ntp.month(), ntp.day(), ntp.hours(), ntp.minutes(), ntp.seconds()));
 }
