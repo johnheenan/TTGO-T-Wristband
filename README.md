@@ -32,6 +32,20 @@ Brief press changes screen and a key press of one second chooses an action
 
 So IMU can be toggled on or off by holding down the the button on the battery screen
 
+## What toggling IMU on or off does
+
+When IMU is toggled on you can view two extra screens (Compass Degrees and Temperature). You can also use movement gestures to wake the watch up from deep sleep.
+
+Currently when the IMU is toggled off battery drain is reduced substantially, increasing the time required between battery recharges. This is for reasons: battery current in deep sleep is reduced with IMU off and the chance of accidental wake ups is reduced. When woken up the current used is dramatically increased compared to when in deep sleep, so accidental wake ups are a battery drain issue.
+
+When IMU is off you can use the button to wake up.
+
+There is relevant information at https://github.com/TioRuben/TTGO-T-Wristband/issues/5
+
+In May 2020 a new hardware version of the T-Wristband went on sale with a different IMU and without a pullup resistor on an interrupt line. The pullup resistor on the previous version drains current unnecessarily in deep sleep due to keeping the interrupt line low during deep sleep. 
+
+With the hardware changes mentioned above and software changes in the future, toggling the IMU off may not be as big an issue.
+
 ## Key Press Behaviour Changes For UTC and DST Menus
 
 The behaviour of key presses change changes in the UTC action to change DST Regions or UTC Offsets

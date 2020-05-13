@@ -5,11 +5,12 @@
 
 /*
 doco
-doco the DST, STD convention of DST earlier than STD is retained for the southern hemisphere because the maths work
+doco the DST, STD convention of DST earlier than STD is retained for the southern hemisphere because the maths works
 doco so please do not call this a bug. If there is a bug it is that the names do not mean what they imply.
-doco it is a pointless exercise to change variable names when the intention is clear for those in the Northern hemisphere
+doco it is a pointless exercise to change variable names when the intention is clear for those in the northern hemisphere
 doco and users are not exposed to the issue
-doco ntp.isDST() ntp2.isDST(utc) answer the queston is it DST in the Northern Hemisphere
+doco ntp.isDST() ntp2.isDST(utc) answer the boolean queston is it DST in the Northern Hemisphere
+doco ntp2.isDstSouth() and ntp2.isDstNorth() give a quad state type answer instead of a boolean answer, see enum isDstNS_t
 doco the answer is correct even if a Southern Hemisphere DST is in use 
 doco to find if it is summertime in the Southern Hemisphere call function ntp2.isDSTSouth()
 doco
@@ -142,13 +143,13 @@ RTC_Date syncTime()
 {
   RTC_Date datetime = RTC_Date();
   initNTP();
-  if (ntp.begin(10, true))
+  if (ntp.begin(800, true))
     datetime = RTC_Date(ntp.year(), ntp.month(), ntp.day(), ntp.hours(), ntp.minutes(), ntp.seconds());
   ntp.stop();
   return datetime;
 }
 
-bool NTP2::isDST(time_t utc) //answers is it DST in the northern hemisphere, see next function for southern hemisphere
+bool NTP2::isDST(time_t utc) //answers is it DST in the northern hemisphere, see next two functions for an alternative
 {
   if ((utc > ntp.utcDST) && (utc <= ntp.utcSTD))
     return true;
@@ -156,13 +157,30 @@ bool NTP2::isDST(time_t utc) //answers is it DST in the northern hemisphere, see
     return false;
 }
 
-bool NTP2::isDSTSouth() //only works if offsets are different in table
+isDstNS_t NTP2::isDSTSouth()
 {
+  if (dst_array[dst_index].dst_offset == dst_array[dst_index].std_offset)
+    return DST_NA;
   bool dst = ntp.isDST();
   if (isNothernHemispere())
-    return dst;
+    return DST_OPP;
+  if (dst)
+    return DST_FALSE;
   else
-    return !dst;
+    return DST_TRUE;
+}
+
+isDstNS_t NTP2::isDSTNorth()
+{
+  if (dst_array[dst_index].dst_offset == dst_array[dst_index].std_offset)
+    return DST_NA;
+  bool dst = ntp.isDST();
+  if (!isNothernHemispere())
+    return DST_OPP;
+  if (dst)
+    return DST_TRUE;
+  else
+    return DST_FALSE;
 }
 
 void NTP2::setUtcDst(time_t utcNow)
