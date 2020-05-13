@@ -19,7 +19,6 @@ doco or by changing to another DST Region and changing back again (green UTC tim
 doco
 */
 
-
 PCF8563_Class rtc;
 WiFiUDP wifiUdp;
 NTP ntp(wifiUdp);
@@ -114,7 +113,7 @@ void setTime(RTC_Date datetime)
 }
 
 bool isNothernHemispere() // doco if offsets are equal (which you can test for) then this function fails
-{// todo jh this function will not work unless there is a real diiference in offsets. For example will not work for Brisbane which has no DST but is included as if it does
+{                         // todo jh this function will not work unless there is a real diiference in offsets. For example will not work for Brisbane which has no DST but is included as if it does
   return dst_array[dst_index].dst_offset > dst_array[dst_index].std_offset;
 }
 
@@ -141,14 +140,15 @@ void initNTP()
 
 RTC_Date syncTime()
 {
+  RTC_Date datetime = RTC_Date();
   initNTP();
-  ntp.begin(false);
-  RTC_Date datetime = RTC_Date(ntp.year(), ntp.month(), ntp.day(), ntp.hours(), ntp.minutes(), ntp.seconds());
+  if (ntp.begin(10, true))
+    datetime = RTC_Date(ntp.year(), ntp.month(), ntp.day(), ntp.hours(), ntp.minutes(), ntp.seconds());
   ntp.stop();
   return datetime;
 }
 
-bool NTP2::isDST(time_t utc)  //answers is it DST in the northern hemisphere, see next function for southern hemisphere
+bool NTP2::isDST(time_t utc) //answers is it DST in the northern hemisphere, see next function for southern hemisphere
 {
   if ((utc > ntp.utcDST) && (utc <= ntp.utcSTD))
     return true;

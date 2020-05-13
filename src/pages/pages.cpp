@@ -5,7 +5,7 @@
 int8_t page = 0;
 EasyButton tp_button(TP_PIN_PIN, 80, true, false);
 uint32_t time_out = millis();
-uint16_t max_time_out = 15000;
+uint32_t max_time_out = 15000;
 bool handlingAction = false;
 bool initialLoad = true;
 

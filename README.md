@@ -2,7 +2,7 @@
 
 ### Uploading Firmware File
 
-If you have got a working version of TioRuben's code on your T-Wristband then you can OTA the firmware file for this source code, firmware.bin from the release section of this github repo, tagged as v0.1-alpha.
+If you have got a working version of TioRuben's code on your T-Wristband then you can OTA the firmware file for this source code, firmware.bin from the release section of this github repo, tagged as v0.1a-alpha.
 
 It can be OTA uploaded to the T-Wristband with: 
 
@@ -82,7 +82,7 @@ Internally, since the NTP library code tries many times to get an answer, the co
 
 The NTP library code was modified minimally.
 
-A firmware ID screen such as "200512,jh,branch,tr" appears in the IMU on/off screen. 200512 means 12 May 2020. "jh,branch,tr" means branch of John Heenan from TioRuben.
+A firmware ID screen such as "200513,jh,branch,tr" appears in the IMU on/off screen. 200513 means 13 May 2020. "jh,branch,tr" means branch of John Heenan from TioRuben.
 
 # From the version cloned from:
 
