@@ -137,9 +137,7 @@ void actionTZ()
   if (isSettingsChanged)
   {
     time_t utcNow;
-    // todo jh include a critical section to prevent preemption
     getUTCTime(&utcNow);
-    time_t ms_snapshot=millis();
     settings.tz_uses_dst = tz_uses_dst;
     if (tz_uses_dst)
     {
@@ -149,7 +147,7 @@ void actionTZ()
     else
       settings.tz_offset = tz_offset;
     storeSettings();
-    setNtpUtcDst(utcNow+(millis()-ms_snapshot));
+    setNtpUtcDst(utcNow);
   }
   else
   {

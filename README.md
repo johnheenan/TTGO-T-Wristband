@@ -24,7 +24,7 @@ espota.py --auth=wristbandpass --progress -i 192.168.1.177 -f firmware.bin
  Orange Compass Degrees|Yes in mod if IMU off|Calibrate Compass|Calibrate Compass
  Red Temperature|Yes in mod if IMU off|None| None
  OTA (upgrade firmware)|No|Update firmware|Update firmware
- Deep Sleep | Yes in mod if plugged in | Wake up| Wake up
+ Deep Sleep | Yes in mod if plugged in | N/A| N/A
 
 In the original there are two types of key presses
 
@@ -34,21 +34,21 @@ So IMU can be toggled on or off by holding down the the button on the battery sc
 
 ## Key Press Behaviour Changes For UTC and DST Menus
 
-The behaviour of key presses change changes in the UTC action to change DST region or UTC offset
+The behaviour of key presses change changes in the UTC action to change DST Regions or UTC Offsets
 
 1. A key press advances either the DST Regions or the UTC Offset screen. 
 2. A key press of one second choose an option and backs out
 3. No key press for five seconds backs out and chooses nothing
 
-### UTC Offset Menu
+### UTC Offsets Menu
 
-There are 49 choices: 48 for each half hour increment in day and a choice to move to DST Regions menu instead. If you choose DST regions then go back in view.
+There are 49 choices: 48 for each half hour increment in day and a choice to move to DST Regions menu instead. If you choose DST regions then go back in to view after being backed out.
 
-### UTC Region Menu
+### DST Regions Menu
 
-The sample firmware had four choices and one other to move to UTC Offset menu
+The sample firmware had four choices and one other to move to UTC Offsets menu
 
-If you choose UTC Offset then go back to view.
+If you choose UTC Offsets then go back to view after being backed out.
 
 The four choices are 
 * Europe, Central
@@ -83,8 +83,6 @@ Internally, since the NTP library code tries many times to get an answer, the co
 The NTP library code was modified minimally.
 
 A firmware ID screen such as "200512,jh,branch,tr" appears in the IMU on/off screen. 200512 means 12 May 2020. "jh,branch,tr" means branch of John Heenan from TioRuben.
-
-There are strings in the code that partially serve as documentation. Just grep through code
 
 # From the version cloned from:
 
