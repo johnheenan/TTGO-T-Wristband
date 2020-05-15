@@ -1,4 +1,5 @@
 #include "wristband-tft.hpp"
+#include "clock.hpp" // for getDstCode
 
 TFT_eSPI tft = TFT_eSPI();
 
@@ -166,6 +167,12 @@ void displayDate(const uint8_t day, const uint8_t month, const uint16_t year, bo
   if (utc)
   {
     tft.print(" **UTC**");
+  }
+  else
+  {
+    char buf1[40];
+    snprintf(buf1, sizeof(buf1), " %s ", getTZCode());
+    tft.print(buf1);
   }
 }
 

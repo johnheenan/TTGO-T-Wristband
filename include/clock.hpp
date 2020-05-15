@@ -15,6 +15,7 @@ void initClock();
 void rtcSleep();
 RTC_Date getClockTime();
 RTC_Date getUTCTime(time_t *utc=nullptr);
+const char* getTZCode();
 void setTime(RTC_Date datetime);
 void 
 setNtpUtcDst(time_t utcNow);

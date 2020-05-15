@@ -26,7 +26,7 @@ void handleBtnHeld()
 void actionTZ()
 {
   unsigned long oldmilis = millis();
-  char buf1[40];
+  char buf1[40]="";
   bool tz_uses_dst = settings.tz_uses_dst;
   menu_state_t menu_tz_uses_dst_true = MENU_STAY;
   menu_state_t menu_tz_uses_dst_false = MENU_STAY;

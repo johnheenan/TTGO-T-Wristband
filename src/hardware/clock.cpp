@@ -108,6 +108,34 @@ RTC_Date getUTCTime(time_t *utc)
   return RTC_Date(utcStructure->tm_year + 1900, utcStructure->tm_mon + 1, utcStructure->tm_mday, utcStructure->tm_hour, utcStructure->tm_min, utcStructure->tm_sec);
 }
 
+char buf1[10];
+const char *getTZCode()
+{
+  if (settings.tz_uses_dst)
+  {
+    if (ntp.isDST())
+      return dst_array[dst_index].dst_code;
+    else
+      return dst_array[dst_index].std_code;
+  }
+  else
+  {
+    int hr = settings.tz_offset / 60;
+    int min = settings.tz_offset % 60;
+    char sign = ' ';
+    if (settings.tz_offset > 0)
+      sign = '+';
+    else if (settings.tz_offset < 0)
+      sign = '-';
+    if(hr<0)
+      hr=-hr;
+    if (min < 0)
+      min = -min;
+    snprintf(buf1, sizeof(buf1), "%c%02d:%02d", sign, hr, min);
+    return buf1;
+  }
+}
+
 void setTime(RTC_Date datetime)
 {
   rtc.setDateTime(datetime);

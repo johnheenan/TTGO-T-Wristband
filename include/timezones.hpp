@@ -3,7 +3,7 @@
 #include <NTP.h> // for enums
 
 
-#define DST_CODE_STRLEN_MAX 4
+#define DST_CODE_STRLEN_MAX 10
 #define DST_REGION_STRLEN_MAX 20
 #define DST_MAX 100
 

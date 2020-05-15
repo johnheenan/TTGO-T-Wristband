@@ -1,8 +1,18 @@
 # Modifications in this branch by John Heenan
 
+### Hardware
+
+This code is for the T-Wristband from LilyGo at https://www.aliexpress.com/item/4000527495064.html with the previous hardware version with MPU9250 IMU.
+
+The code will be updated for the current T-Wristband on sale with LSM9DS1 IMU.
+
 ### Uploading Firmware File
 
-If you have got a working version of TioRuben's code on your T-Wristband then you can OTA the firmware file for this source code, firmware.bin from the release section of this github repo, tagged as v0.1a-alpha.
+This OTA update method has been tested with the T-Wristband with firmware from source at https://github.com/TioRuben/TTGO-T-Wristband and https://github.com/johnheenan/TTGO-T-Wristband.
+
+It will be tested with firmware form other sources such as https://github.com/Xinyuan-LilyGO/T-Wristband and with original shipped firmware.
+
+If you have got a working version of TioRuben's code on your T-Wristband then you can OTA the firmware file for this source code, firmware.bin, from the release section of this github repo, tagged as v0.1c-alpha.
 
 It can be OTA uploaded to the T-Wristband with: 
 
@@ -36,7 +46,7 @@ So IMU can be toggled on or off by holding down the the button on the battery sc
 
 When IMU is toggled on you can view two extra screens (Compass Degrees and Temperature). You can also use movement gestures to wake the watch up from deep sleep.
 
-Currently when the IMU is toggled off battery drain is reduced substantially, increasing the time required between battery recharges. This is for reasons: battery current in deep sleep is reduced with IMU off and the chance of accidental wake ups is reduced. When woken up the current used is dramatically increased compared to when in deep sleep, so accidental wake ups are a battery drain issue.
+Currently when the IMU is toggled off battery drain is reduced substantially, increasing the time required between battery recharges. This is for two reasons: battery current in deep sleep is reduced with IMU off and the chance of accidental wake ups is reduced. When woken up the current used is dramatically increased compared to when in deep sleep, so accidental wake ups are a battery drain issue.
 
 When IMU is off you can use the button to wake up.
 
@@ -72,7 +82,7 @@ The four choices are
 
 A region does not have to be a DST region to put an entry in (such as China and Brisbane)
 
-You can code up to 100 in the timezones.cpp file. Each entry only requires one line.
+You can code up to 100 DST regions in the timezones.cpp file and give each whatever name you want, up to 20 characters (but only the middle 12 or so charcters will be displayed). Each entry only requires one line. An up to 10 character zone code, such as "CST" is shown in the local time screen. If preferred you can use a 10 character code code such as as "+8hr" or "+10:30". You can also leave it blank as in "". 
 
 ## NVS (as EEPROM) Settings preserved
 
@@ -96,7 +106,7 @@ Internally, since the NTP library code tries many times to get an answer, the co
 
 The NTP library code was modified minimally.
 
-A firmware ID screen such as "200513,jh,branch,tr" appears in the IMU on/off screen. 200513 means 13 May 2020. "jh,branch,tr" means branch of John Heenan from TioRuben.
+A firmware ID screen such as "200515,jh,branch,tr" appears in the IMU on/off screen. 200513 means 13 May 2020. "jh,branch,tr" means branch of John Heenan from TioRuben.
 
 # From the version cloned from:
 
